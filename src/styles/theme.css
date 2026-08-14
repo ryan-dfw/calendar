@@ -1,0 +1,58 @@
+:root {
+  --bg-base: #04060b;
+  --text: #dbe3ee;
+  --text-dim: rgba(219, 227, 238, 0.55);
+
+  --c1: 59 130 246;
+  --c1a: 0.34;
+  --c2: 15 23 42;
+  --c2a: 0.3;
+  --c3: 236 72 153;
+  --c3a: 0.12;
+
+  --p1x: 88%;
+  --p1y: 12%;
+  --p2x: 10%;
+  --p2y: 86%;
+  --p3x: 60%;
+  --p3y: 46%;
+
+  --accent: 56 189 248;
+
+  --line: rgba(255, 255, 255, 0.08);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+
+  background-image: radial-gradient(
+      min(1000px, 100vw) min(800px, 70vh) at var(--p1x) var(--p1y),
+      rgba(var(--c1) / var(--c1a)) 0%,
+      rgba(var(--c1) / 0) 62%
+    ),
+    radial-gradient(
+      min(1100px, 110vw) min(850px, 74vh) at var(--p2x) var(--p2y),
+      rgba(var(--c2) / var(--c2a)) 0%,
+      rgba(var(--c2) / 0) 64%
+    ),
+    radial-gradient(
+      min(900px, 95vw) min(700px, 64vh) at var(--p3x) var(--p3y),
+      rgba(var(--c3) / var(--c3a)) 0%,
+      rgba(var(--c3) / 0) 60%
+    );
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    130% 130% at 50% 45%,
+    transparent 55%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+}

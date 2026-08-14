@@ -1,0 +1,71 @@
+:root {
+  font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  line-height: 1.4;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+img,
+a {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+html,
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html {
+  background-color: var(--bg-base);
+}
+
+body {
+  background: transparent;
+  color: var(--text);
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: calc(10px + env(safe-area-inset-top))
+    calc(10px + env(safe-area-inset-right))
+    calc(10px + env(safe-area-inset-bottom))
+    calc(10px + env(safe-area-inset-left));
+}
+
+@supports (height: 100dvh) {
+  .stage {
+    height: 100dvh;
+  }
+}
