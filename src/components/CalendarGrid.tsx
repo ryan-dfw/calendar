@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { DAY_LABELS, addDays, isPastDate, isSameDate } from "../lib/week";
 import { toBusyRuns } from "../lib/busyRuns";
 import { useWeekBlockedHours } from "../hooks/useWeekBlockedHours";
@@ -37,9 +37,20 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
     setShudder((prev) => ({ key, count: prev && prev.key === key ? prev.count + 1 : 1 }));
   };
 
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const todayIdx = days.findIndex((d) => isSameDate(d, today));
+  const nowHour = now.getHours();
+  const nowFraction = now.getMinutes() / 60;
+
   return (
     <div className="calendarWrap">
       <div className="gridCell headerGutter" style={{ gridColumn: 1, gridRow: 1 }} />
+      <div className="gridCell headerGutter headerGutter--right" style={{ gridColumn: 9, gridRow: 1 }} />
 
       {days.map((d, i) => (
         <div
@@ -66,16 +77,77 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
         </div>
       ))}
 
+      {Array.from({ length: 24 }, (_, h) => (
+        <div
+          key={`hlr-${h}`}
+          className={[
+            "gridCell",
+            "hourLabel",
+            "hourLabel--right",
+            h % HOUR_LABEL_STEP !== 0 ? "isMinor" : "",
+          ]
+            .join(" ")
+            .trim()}
+          style={{ gridColumn: 9, gridRow: h + 2 }}
+        >
+          {formatHour(h)}
+        </div>
+      ))}
+
       {days.map((d, dayIdx) => {
         const today_ = isSameDate(d, today);
         return Array.from({ length: 24 }, (_, h) => (
           <div
             key={`c-${dayIdx}-${h}`}
-            className={["gridCell", "hourCell", today_ ? "isToday" : ""].join(" ").trim()}
+            className={[
+              "gridCell",
+              "hourCell",
+              today_ ? "isToday" : "",
+              h % HOUR_LABEL_STEP !== 0 ? "isMinor" : "",
+            ]
+              .join(" ")
+              .trim()}
             style={{ gridColumn: dayIdx + 2, gridRow: h + 2 }}
           />
         ));
       })}
+
+      {todayIdx !== -1 ? (
+        <div
+          className="nowLineCell"
+          style={{ gridColumn: "2 / 9", gridRow: nowHour + 2 }}
+          aria-hidden="true"
+        >
+          <div
+            className="nowLine"
+            style={{
+              top: `${nowFraction * 100}%`,
+              background: (() => {
+                const leftEdge = (todayIdx / 7) * 100;
+                const rightEdge = ((todayIdx + 1) / 7) * 100;
+                const outerAlpha = 0.35;
+                return `linear-gradient(to right,
+                  rgba(255, 20, 147, 0.05) 0%,
+                  rgba(255, 20, 147, ${outerAlpha}) ${leftEdge}%,
+                  rgba(255, 20, 147, 1) ${leftEdge}%,
+                  rgba(255, 20, 147, 1) ${rightEdge}%,
+                  rgba(255, 20, 147, ${outerAlpha}) ${rightEdge}%,
+                  rgba(255, 20, 147, 0.05) 100%)`;
+              })(),
+            }}
+          />
+        </div>
+      ) : null}
+
+      {todayIdx !== -1 ? (
+        <div
+          className="nowLineCell"
+          style={{ gridColumn: todayIdx + 2, gridRow: nowHour + 2 }}
+          aria-hidden="true"
+        >
+          <div className="nowDot" style={{ top: `${nowFraction * 100}%` }} />
+        </div>
+      ) : null}
 
       {(() => {
         const dayRuns = days.map((_, dayIdx) => toBusyRuns(blocked[dayIdx] ?? new Array(24).fill(false)));
@@ -223,6 +295,19 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
         );
       })}
 
+      {[6, 12, 18]
+        .filter((h) => !(blocked[3]?.[h] ?? false))
+        .map((h) => (
+          <div
+            key={`mark-${h}`}
+            className="midWeekMark"
+            style={{ gridColumn: 3 + 2, gridRow: h + 2 }}
+            aria-hidden="true"
+          >
+            {formatHour(h)}
+          </div>
+        ))}
+
       <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
         <defs>
           <mask id="freeHoursMask" maskContentUnits="objectBoundingBox">
@@ -246,7 +331,7 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
       </svg>
       <div
         className="shimmerOverlay"
-        style={{ gridColumn: "2 / -1", gridRow: "2 / -1" }}
+        style={{ gridColumn: "2 / 9", gridRow: "2 / -1" }}
         aria-hidden="true"
       />
     </div>

@@ -100,7 +100,7 @@
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: clamp(26px, 6vw, 48px) repeat(7, 1fr);
+  grid-template-columns: min-content repeat(7, 1fr) min-content;
   grid-template-rows: auto repeat(24, 1fr);
   border-radius: 22px;
   overflow: hidden;
@@ -123,6 +123,10 @@
   border-bottom: 1px solid var(--line);
 }
 
+.headerGutter--right {
+  border-left: 1px solid var(--line-v);
+}
+
 .dayHeader {
   display: flex;
   flex-direction: column;
@@ -131,7 +135,7 @@
   gap: 1px;
   padding: clamp(4px, 1vh, 8px) 2px;
   border-bottom: 1px solid var(--line);
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--line-v);
 }
 
 .dayHeader.isToday {
@@ -170,13 +174,61 @@
   opacity: 0.4;
 }
 
+.hourLabel--right {
+  justify-content: flex-start;
+  padding-right: 0;
+  padding-left: 4px;
+  border-left: 1px solid var(--line-v);
+}
+
 .hourCell {
   border-top: 1px solid var(--line);
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--line-v);
+}
+
+.hourCell.isMinor {
+  border-top-color: var(--line-minor);
 }
 
 .hourCell.isToday {
   background: rgba(255, 255, 255, 0.02);
+}
+
+.midWeekMark {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 2px;
+  font-size: clamp(7px, 1.8vw, 10px);
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.nowLineCell {
+  position: relative;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.nowLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+.nowDot {
+  position: absolute;
+  left: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff1493;
+  box-shadow: 0 0 6px rgba(255, 20, 147, 0.8);
+  transform: translateY(-50%);
 }
 
 .blockRun {
@@ -186,14 +238,21 @@
   margin: 2px 1.0625px 2px 1.275px;
   border-radius: 10px;
   overflow: hidden;
-  background: linear-gradient(
-    180deg,
-    rgba(100, 130, 165, 0.42) 0%,
-    rgba(100, 130, 165, 0.3) 55%,
-    rgba(100, 130, 165, 0.36) 100%
-  );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 0 0 1px rgba(100, 130, 165, 0.4),
+  background: repeating-linear-gradient(
+      -45deg,
+      rgba(0, 0, 0, 0.07) 0px,
+      rgba(0, 0, 0, 0.07) 11px,
+      transparent 11px,
+      transparent 22px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(135, 165, 200, 0.58) 0%,
+      rgba(135, 165, 200, 0.44) 55%,
+      rgba(135, 165, 200, 0.5) 100%
+    );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 1px rgba(135, 165, 200, 0.55),
     0 6px 18px -8px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(100px) saturate(150%) !important;
   -webkit-backdrop-filter: blur(100px) saturate(150%) !important;
@@ -221,20 +280,27 @@
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  background: rgba(14, 20, 30, 0.32);
+  background: rgba(14, 20, 30, 0.22);
   filter: blur(8px);
   pointer-events: none;
 }
 
 .blockRun.isPast {
-  background: linear-gradient(
-    180deg,
-    rgba(100, 130, 165, 0.22) 0%,
-    rgba(100, 130, 165, 0.14) 55%,
-    rgba(100, 130, 165, 0.17) 100%
-  );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    inset 0 0 0 1px rgba(100, 130, 165, 0.22),
+  background: repeating-linear-gradient(
+      -45deg,
+      rgba(0, 0, 0, 0.05) 0px,
+      rgba(0, 0, 0, 0.05) 11px,
+      transparent 11px,
+      transparent 22px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(135, 165, 200, 0.32) 0%,
+      rgba(135, 165, 200, 0.22) 55%,
+      rgba(135, 165, 200, 0.26) 100%
+    );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(135, 165, 200, 0.32),
     0 6px 18px -8px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   backdrop-filter: blur(100px) saturate(150%) !important;
@@ -273,10 +339,6 @@
   border-color: rgba(var(--accent) / 0.38);
 }
 
-.pseudoBlock:active {
-  background: rgba(var(--accent) / 0.14);
-  transform: scale(0.985);
-}
 
 .pseudoBlock:focus-visible {
   outline: none;
@@ -310,6 +372,16 @@
   letter-spacing: 0.02em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   transition: transform 0.1s ease, background-color 0.15s ease;
+  animation: tapEchoFade 2s ease forwards;
+}
+
+@keyframes tapEchoFade {
+  0%, 25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .tapEcho:hover {

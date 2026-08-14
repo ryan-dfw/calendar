@@ -19,7 +19,9 @@
 
   --accent: 56 189 248;
 
-  --line: rgba(255, 255, 255, 0.08);
+  --line: rgba(255, 255, 255, 0.2);
+  --line-minor: rgba(255, 255, 255, 0.08);
+  --line-v: rgba(255, 255, 255, 0.08);
 }
 
 body::before {
