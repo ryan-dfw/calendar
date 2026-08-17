@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import { addDays, isSameDate } from "../lib/week";
+import { useEffect, useState, type CSSProperties } from "react";
+import { isSameDate } from "../lib/week";
 import { useWeekBlockedHours } from "../hooks/useWeekBlockedHours";
 import { GridSkeleton } from "./GridSkeleton";
+import { DayScrubber } from "./DayScrubber";
 import { NowIndicator } from "./NowIndicator";
 import { BusyBlocks } from "./BusyBlocks";
 import { FreeBlocks } from "./FreeBlocks";
@@ -10,13 +11,13 @@ import { MidWeekMarks } from "./MidWeekMarks";
 import { ShimmerLayer } from "./ShimmerLayer";
 
 type CalendarGridProps = {
-  monday: Date;
+  days: Date[];
   today: Date;
+  onSelectDay?: (d: Date) => void;
 };
 
-export function CalendarGrid({ monday, today }: CalendarGridProps) {
-  const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
-  const { blocked } = useWeekBlockedHours(monday);
+export function CalendarGrid({ days, today, onSelectDay }: CalendarGridProps) {
+  const { blocked } = useWeekBlockedHours(days);
 
   const [tapped, setTapped] = useState<Set<string>>(new Set());
   const [activeEchoes, setActiveEchoes] = useState<Set<string>>(new Set());
@@ -62,10 +63,27 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
   const nowFraction = now.getMinutes() / 60;
 
   return (
-    <div className="calendarWrap">
-      <GridSkeleton days={days} today={today} />
+    <div
+      className={["calendarWrap", days.length === 1 ? "isSingleDay" : ""].join(" ").trim()}
+      style={{ "--day-count": days.length } as CSSProperties}
+    >
+      <GridSkeleton days={days} today={today} onSelectDay={onSelectDay} />
 
-      <NowIndicator todayIdx={todayIdx} nowHour={nowHour} nowFraction={nowFraction} />
+      {days.length === 1 && onSelectDay ? (
+        <DayScrubber
+          today={today}
+          selectedDay={days[0]}
+          onSelect={onSelectDay}
+          style={{ gridColumn: "1 / -1", gridRow: 1 }}
+        />
+      ) : null}
+
+      <NowIndicator
+        todayIdx={todayIdx}
+        dayCount={days.length}
+        nowHour={nowHour}
+        nowFraction={nowFraction}
+      />
 
       <BusyBlocks
         days={days}
@@ -80,7 +98,7 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
 
       <TapEchoes tapped={tapped} onToggle={toggleTapped} />
 
-      <MidWeekMarks blocked={blocked} activeEchoes={activeEchoes} />
+      {days.length === 7 ? <MidWeekMarks blocked={blocked} activeEchoes={activeEchoes} /> : null}
 
       <ShimmerLayer days={days} today={today} blocked={blocked} />
     </div>

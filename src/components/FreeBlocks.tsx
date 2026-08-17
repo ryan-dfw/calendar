@@ -10,6 +10,8 @@ type FreeBlocksProps = {
 };
 
 export function FreeBlocks({ days, today, blocked, onSelectHour }: FreeBlocksProps) {
+  const isDayView = days.length === 1;
+
   return (
     <>
       {days.map((d, dayIdx) => {
@@ -55,7 +57,13 @@ export function FreeBlocks({ days, today, blocked, onSelectHour }: FreeBlocksPro
                     }
                   }
             }
-          />
+          >
+            {isDayView && run.length === 24 ? (
+              <span className="pseudoBlockLabel">
+                <span className="pseudoBlockLabelText">Free</span>
+              </span>
+            ) : null}
+          </div>
         ));
       })}
     </>

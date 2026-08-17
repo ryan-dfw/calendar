@@ -50,6 +50,68 @@ export function parseCompactDate(str: string): Date | null {
   return date;
 }
 
+export function toCompactMonth(d: Date): string {
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${yy}${mm}`;
+}
+
+export function parseCompactMonth(str: string): Date | null {
+  if (!/^\d{4}$/.test(str)) return null;
+  const yy = Number(str.slice(0, 2));
+  const mm = Number(str.slice(2, 4));
+  if (mm < 1 || mm > 12) return null;
+  return new Date(2000 + yy, mm - 1, 1);
+}
+
+export function toCompactYear(d: Date): string {
+  return String(d.getFullYear()).slice(-2);
+}
+
+export function parseCompactYear(str: string): Date | null {
+  if (!/^\d{2}$/.test(str)) return null;
+  const yy = Number(str);
+  return new Date(2000 + yy, 0, 1);
+}
+
+export type UrlParams = {
+  view: "D" | "W" | "M" | "Y";
+  date: Date | null;
+};
+
+export function parseUrlParams(search: string): UrlParams {
+  const raw = search.replace(/^\?/, "");
+  const tokens = raw.split("&").filter(Boolean);
+
+  let view: UrlParams["view"] = "W";
+  let date: Date | null = null;
+
+  for (const token of tokens) {
+    if (token === "d") view = "D";
+    else if (token === "m") view = "M";
+    else if (token === "y") view = "Y";
+    else {
+      const parsed = parseCompactDate(token) ?? parseCompactMonth(token) ?? parseCompactYear(token);
+      if (parsed) date = parsed;
+    }
+  }
+
+  return { view, date };
+}
+
+export function buildUrlParams(view: "D" | "W" | "M" | "Y", date: Date | null): string {
+  const tokens: string[] = [];
+  if (view === "D") tokens.push("d");
+  else if (view === "M") tokens.push("m");
+  else if (view === "Y") tokens.push("y");
+  if (date) {
+    if (view === "Y") tokens.push(toCompactYear(date));
+    else if (view === "M") tokens.push(toCompactMonth(date));
+    else tokens.push(toCompactDate(date));
+  }
+  return tokens.join("&");
+}
+
 export function formatWeekRangeCompact(monday: Date): string {
   const sunday = addDays(monday, 6);
   const yy = String(monday.getFullYear()).slice(-2);
@@ -64,6 +126,28 @@ export function formatWeekRangeCompact(monday: Date): string {
 
   const mm2 = String(sunday.getMonth() + 1).padStart(2, "0");
   return `${yy}${mm}${dd1}-${mm2}${dd2}`;
+}
+
+export function formatDayLabel(d: Date, today: Date): string {
+  if (isSameDate(d, today)) return "Today";
+  const month = d.toLocaleDateString(undefined, { month: "short" });
+  if (d.getFullYear() !== today.getFullYear()) {
+    return `${d.getFullYear()} ${month} ${d.getDate()}`;
+  }
+  return `${month} ${d.getDate()}`;
+}
+
+export function formatYearLabel(anchor: Date): string {
+  return String(anchor.getFullYear());
+}
+
+export function formatMonthLabel(anchor: Date, currentYear: number): string {
+  const month = anchor.toLocaleDateString(undefined, { month: "long" }).toUpperCase();
+  if (anchor.getFullYear() > currentYear) {
+    const yy = String(anchor.getFullYear()).slice(-2);
+    return `${month} '${yy}`;
+  }
+  return month;
 }
 
 export function formatWeekRange(monday: Date): string {

@@ -3,3 +3,5 @@
 @import "./calendar/now-indicator.css";
 @import "./calendar/blocks.css";
 @import "./calendar/shimmer.css";
+@import "./calendar/month.css";
+@import "./calendar/year.css";

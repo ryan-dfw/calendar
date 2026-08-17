@@ -8,6 +8,8 @@ type ShimmerLayerProps = {
 };
 
 export function ShimmerLayer({ days, today, blocked }: ShimmerLayerProps) {
+  const dayCount = days.length;
+
   return (
     <>
       <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
@@ -20,9 +22,9 @@ export function ShimmerLayer({ days, today, blocked }: ShimmerLayerProps) {
               return freeRuns.map((run, i) => (
                 <rect
                   key={`mask-${dayIdx}-${i}`}
-                  x={dayIdx / 7}
+                  x={dayIdx / dayCount}
                   y={run.start / 24}
-                  width={1 / 7}
+                  width={1 / dayCount}
                   height={run.length / 24}
                   fill="white"
                 />
@@ -33,7 +35,7 @@ export function ShimmerLayer({ days, today, blocked }: ShimmerLayerProps) {
       </svg>
       <div
         className="shimmerOverlay"
-        style={{ gridColumn: "2 / 9", gridRow: "2 / -1" }}
+        style={{ gridColumn: `2 / ${dayCount + 2}`, gridRow: "2 / -1" }}
         aria-hidden="true"
       />
     </>

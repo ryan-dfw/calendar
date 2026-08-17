@@ -1,0 +1,103 @@
+import { useMemo, useState, type CSSProperties } from "react";
+import { DAY_LABELS, isPastDate, isSameDate, startOfWeekMonday } from "../lib/week";
+import { getMonthGridDays } from "../lib/month";
+import { toBusyRuns } from "../lib/busyRuns";
+import { useMonthBlockedHours } from "../hooks/useMonthBlockedHours";
+
+type MonthViewProps = {
+  monthAnchor: Date;
+  today: Date;
+  onSelectWeek: (date: Date) => void;
+};
+
+export function MonthView({ monthAnchor, today, onSelectWeek }: MonthViewProps) {
+  const days = useMemo(
+    () => getMonthGridDays(monthAnchor),
+    [monthAnchor.getFullYear(), monthAnchor.getMonth()],
+  );
+  const { blocked } = useMonthBlockedHours(days);
+  const weekCount = days.length / 7;
+  const anchorMonth = monthAnchor.getMonth();
+  const todayIdx = days.findIndex((d) => isSameDate(d, today));
+  const currentWeekRow = todayIdx === -1 ? -1 : Math.floor(todayIdx / 7);
+  const curMonday = useMemo(() => startOfWeekMonday(today), [today]);
+
+  const [shudder, setShudder] = useState<{ key: string; count: number } | null>(null);
+  const triggerShudder = (key: string) => {
+    setShudder((prev) => ({ key, count: prev && prev.key === key ? prev.count + 1 : 1 }));
+  };
+
+  return (
+    <div className="monthWrap" style={{ gridTemplateRows: `auto repeat(${weekCount}, 1fr)` }}>
+      {DAY_LABELS.map((label, i) => (
+        <div key={`mh-${i}`} className="monthHeaderCell" style={{ gridColumn: i + 1, gridRow: 1 }}>
+          {label}
+        </div>
+      ))}
+
+      {days.map((d, i) => {
+        const dayBlocked = blocked[i] ?? new Array(24).fill(false);
+        const runs = toBusyRuns(dayBlocked);
+        const inMonth = d.getMonth() === anchorMonth;
+        const isPast = isPastDate(d, today);
+        const col = (i % 7) + 1;
+        const rowIdx = Math.floor(i / 7);
+        const row = rowIdx + 2;
+        const isCurrentWeek = rowIdx === currentWeekRow;
+        const cellKey = `mw-${i}`;
+        const isShuddering = shudder?.key === cellKey;
+        const shudderCount = isShuddering ? shudder!.count : 0;
+        const isPastWeek = startOfWeekMonday(d).getTime() < curMonday.getTime();
+        const handleTap = () => {
+          if (isPastWeek) {
+            triggerShudder(cellKey);
+          } else {
+            onSelectWeek(d);
+          }
+        };
+        return (
+          <div
+            key={isShuddering ? `md-${i}-${shudderCount}` : `md-${i}`}
+            className={[
+              "monthDayCell",
+              inMonth ? "" : "isOutside",
+              isSameDate(d, today) ? "isToday" : "",
+              isCurrentWeek ? "isCurrentWeek" : "",
+              col === 1 ? "isWeekStart" : "",
+              col === 7 ? "isWeekEnd" : "",
+              isShuddering ? "isShuddering" : "",
+            ]
+              .join(" ")
+              .trim()}
+            style={
+              {
+                gridColumn: col,
+                gridRow: row,
+                "--shudder-power": shudderCount || 1,
+              } as CSSProperties
+            }
+            onClick={handleTap}
+            onAnimationEnd={() => setShudder((cur) => (cur?.key === cellKey ? null : cur))}
+          >
+            <span className="monthDayNum">{d.getDate()}</span>
+            <div className="monthFillTrack">
+              {runs.map((run, runIdx) => (
+                <div
+                  key={`fill-${i}-${runIdx}`}
+                  className={["blockRun", isPast ? "isPast" : ""].join(" ").trim()}
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    top: `${(run.start / 24) * 100}%`,
+                    height: `${(run.length / 24) * 100}%`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

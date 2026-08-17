@@ -1,0 +1,182 @@
+.yearWrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: clamp(8px, 1.6vw, 16px);
+  overflow: hidden;
+}
+
+@media (orientation: landscape) {
+  .yearWrap {
+    width: 70vw;
+    max-width: 70vw;
+    margin: 0 auto;
+  }
+}
+
+.yearMonth {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(6px, 1vh, 10px);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(8, 12, 20, 0.45);
+  backdrop-filter: blur(48px) saturate(150%) brightness(1.25);
+  -webkit-backdrop-filter: blur(48px) saturate(150%) brightness(1.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: border-color 0.35s ease;
+}
+
+@media (hover: hover) {
+  .yearMonth.isBrightMonth:hover {
+    border-color: rgba(120, 170, 255, 0.85);
+  }
+}
+
+.yearMonth.isShuddering {
+  animation: blockShudder 0.4s ease;
+}
+
+.yearMonth.isCurrentMonth {
+  border-color: rgba(var(--accent) / 0.55);
+}
+
+.yearMonth.isBrightMonth {
+  background-color: rgba(24, 32, 46, 0.55);
+  backdrop-filter: blur(48px) saturate(160%) brightness(1.4);
+  -webkit-backdrop-filter: blur(48px) saturate(160%) brightness(1.4);
+}
+
+.yearMonth.isCurrentMonth.isBrightMonth {
+  background-color: transparent;
+  background-image: linear-gradient(
+    180deg,
+    rgba(40, 70, 130, 0.55) 0%,
+    rgba(24, 32, 46, 0.55) 70%
+  );
+}
+
+.yearMonthLabel {
+  font-size: clamp(9px, 2vw, 12px);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 0 2px 2px;
+}
+
+.yearMonth.isCurrentMonth .yearMonthLabel {
+  color: rgb(var(--accent));
+}
+
+.yearMonthLabel.isUpcoming {
+  color: var(--text);
+  opacity: 0.92;
+}
+
+.yearMonthGrid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+}
+
+.yearDayCell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.yearDayNum {
+  font-size: clamp(6px, 1.3vw, 8.5px);
+  color: var(--text-dim);
+  opacity: 0.85;
+}
+
+.yearDayCell.isOutside .yearDayNum {
+  opacity: 0;
+}
+
+.yearMonthGrid.isBrightGrid .yearDayNum {
+  color: var(--text);
+  opacity: 0.92;
+}
+
+.yearMonthGrid.isBrightGrid .yearDayCell.isOutside .yearDayNum {
+  opacity: 0;
+}
+
+.yearMonthGrid.isBrightGrid .yearDayCell.isPastDay .yearDayNum {
+  color: var(--text-dim);
+  opacity: 0.85;
+}
+
+.yearDayCell.isToday {
+  border-radius: 999px;
+  background: rgba(var(--accent) / 0.28);
+}
+
+.yearDayCell.isToday .yearDayNum {
+  color: rgb(var(--accent));
+  opacity: 1;
+  font-weight: 700;
+}
+
+.yearDayDot {
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 78%;
+  height: 34%;
+  border-radius: 2.5px;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    rgba(135, 165, 200, calc(0.65 * var(--q1, 0))) 0% 25%,
+    rgba(135, 165, 200, calc(0.65 * var(--q2, 0))) 25% 50%,
+    rgba(135, 165, 200, calc(0.65 * var(--q3, 0))) 50% 75%,
+    rgba(135, 165, 200, calc(0.65 * var(--q4, 0))) 75% 100%
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 0.5px rgba(135, 165, 200, 0.55);
+}
+
+.yearDayDot.isPast {
+  background: rgba(148, 163, 184, 0.4);
+  box-shadow: inset 0 0 0 0.5px rgba(148, 163, 184, 0.35);
+  opacity: 0.6;
+}
+
+.yearNowLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgb(var(--accent));
+  z-index: 1;
+}
+
+.yearDayDot.isFull {
+  background: rgba(160, 160, 160, 0.65);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 0.5px rgba(160, 160, 160, 0.55);
+}
+
+.yearDayDot.isEmpty {
+  background: transparent;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.15);
+}
+
+.yearDayNum.isEmptyNum {
+  color: var(--text);
+  opacity: 1;
+}

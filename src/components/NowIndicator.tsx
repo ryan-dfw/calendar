@@ -1,11 +1,14 @@
 type NowIndicatorProps = {
   todayIdx: number;
+  dayCount: number;
   nowHour: number;
   nowFraction: number;
 };
 
-export function NowIndicator({ todayIdx, nowHour, nowFraction }: NowIndicatorProps) {
+export function NowIndicator({ todayIdx, dayCount, nowHour, nowFraction }: NowIndicatorProps) {
   if (todayIdx === -1) return null;
+
+  const rightCol = dayCount + 2;
 
   return (
     <>
@@ -25,10 +28,10 @@ export function NowIndicator({ todayIdx, nowHour, nowFraction }: NowIndicatorPro
         </div>
       ) : null}
 
-      {todayIdx < 6 ? (
+      {todayIdx < dayCount - 1 ? (
         <div
           className="nowLineCell"
-          style={{ gridColumn: `${todayIdx + 3} / 9`, gridRow: nowHour + 2 }}
+          style={{ gridColumn: `${todayIdx + 3} / ${rightCol}`, gridRow: nowHour + 2 }}
           aria-hidden="true"
         >
           <div

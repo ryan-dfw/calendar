@@ -52,6 +52,38 @@
   pointer-events: none;
 }
 
+.calendarWrap.isSingleDay .blockRun {
+  background: repeating-linear-gradient(
+      -45deg,
+      rgba(0, 0, 0, 0.035) 0px,
+      rgba(0, 0, 0, 0.035) 22px,
+      transparent 22px,
+      transparent 44px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(135, 165, 200, 0.58) 0%,
+      rgba(135, 165, 200, 0.44) 55%,
+      rgba(135, 165, 200, 0.5) 100%
+    );
+}
+
+.calendarWrap.isSingleDay .blockRun.isPast {
+  background: repeating-linear-gradient(
+      -45deg,
+      rgba(0, 0, 0, 0.025) 0px,
+      rgba(0, 0, 0, 0.025) 22px,
+      transparent 22px,
+      transparent 44px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(135, 165, 200, 0.32) 0%,
+      rgba(135, 165, 200, 0.22) 55%,
+      rgba(135, 165, 200, 0.26) 100%
+    );
+}
+
 .blockRun.isPast {
   background: repeating-linear-gradient(
       -45deg,
@@ -116,6 +148,30 @@
   cursor: default;
   pointer-events: none;
   opacity: 0.55;
+}
+
+.pseudoBlockLabel {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pseudoBlockLabelText {
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgba(8, 12, 20, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  font-size: clamp(13.75px, 3.75vw, 17.5px);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .tapEcho {
@@ -201,4 +257,17 @@
 .blockLabel--center {
   top: 50%;
   transform: translateY(-50%);
+}
+
+.calendarWrap.isSingleDay .blockLabel {
+  font-size: 1.9cqh;
+  font-weight: 600;
+}
+
+.calendarWrap.isSingleDay .blockLabel--start {
+  top: 2px;
+}
+
+.calendarWrap.isSingleDay .blockLabel--end {
+  bottom: 2px;
 }

@@ -10,8 +10,8 @@ type GCalEvent = {
   end?: GCalDateTime;
 };
 
-function emptyWeek(): boolean[][] {
-  return Array.from({ length: 7 }, () => new Array(24).fill(false));
+function emptyGrid(n: number): boolean[][] {
+  return Array.from({ length: n }, () => new Array(24).fill(false));
 }
 
 function hourInTZ(iso: string): number {
@@ -38,18 +38,20 @@ function dateKeyOf(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-export async function fetchWeekBlockedHours(monday: Date): Promise<boolean[][]> {
-  const week = emptyWeek();
+export async function fetchBlockedHoursForDays(days: Date[], maxResults?: number): Promise<boolean[][]> {
+  const grid = emptyGrid(days.length);
 
   if (!API_KEY || !CALENDAR_ID) {
-    console.warn("raincal: missing VITE_GOOGLE_API_KEY / VITE_GOOGLE_CALENDAR_ID; showing an empty week.");
-    return week;
+    console.warn("raincal: missing VITE_GOOGLE_API_KEY / VITE_GOOGLE_CALENDAR_ID; showing an empty range.");
+    return grid;
   }
+  if (days.length === 0) return grid;
 
-  const timeMin = new Date(monday);
+  const timeMin = new Date(days[0]);
   timeMin.setHours(0, 0, 0, 0);
-  const timeMax = new Date(timeMin);
-  timeMax.setDate(timeMax.getDate() + 7);
+  const timeMax = new Date(days[days.length - 1]);
+  timeMax.setHours(0, 0, 0, 0);
+  timeMax.setDate(timeMax.getDate() + 1);
 
   const url = new URL(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events`,
@@ -60,19 +62,24 @@ export async function fetchWeekBlockedHours(monday: Date): Promise<boolean[][]> 
   url.searchParams.set("singleEvents", "true");
   url.searchParams.set("orderBy", "startTime");
   url.searchParams.set("timeZone", TIME_ZONE);
+  if (maxResults) url.searchParams.set("maxResults", String(maxResults));
 
-  const res = await fetch(url.toString());
-  if (!res.ok) {
-    throw new Error(`Google Calendar fetch failed (${res.status})`);
-  }
-  const data = (await res.json()) as { items?: GCalEvent[] };
-  const events = data.items ?? [];
+  const events: GCalEvent[] = [];
+  let pageToken: string | undefined;
+  do {
+    if (pageToken) url.searchParams.set("pageToken", pageToken);
+    else url.searchParams.delete("pageToken");
 
-  const dayKeys = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(d.getDate() + i);
-    return dateKeyOf(d);
-  });
+    const res = await fetch(url.toString());
+    if (!res.ok) {
+      throw new Error(`Google Calendar fetch failed (${res.status})`);
+    }
+    const data = (await res.json()) as { items?: GCalEvent[]; nextPageToken?: string };
+    events.push(...(data.items ?? []));
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+
+  const dayKeys = days.map(dateKeyOf);
 
   for (const ev of events) {
     if (ev.status === "cancelled") continue;
@@ -81,7 +88,7 @@ export async function fetchWeekBlockedHours(monday: Date): Promise<boolean[][]> 
       const startKey = ev.start.date;
       const endKeyExclusive = ev.end?.date ?? startKey;
       dayKeys.forEach((key, dayIdx) => {
-        if (key >= startKey && key < endKeyExclusive) week[dayIdx].fill(true);
+        if (key >= startKey && key < endKeyExclusive) grid[dayIdx].fill(true);
       });
       continue;
     }
@@ -100,24 +107,37 @@ export async function fetchWeekBlockedHours(monday: Date): Promise<boolean[][]> 
       if (dayIdx === -1) continue;
       const from = Math.floor(startHour);
       const to = Math.max(from + 1, Math.ceil(endHour));
-      for (let h = from; h < Math.min(to, 24); h++) week[dayIdx][h] = true;
+      for (let h = from; h < Math.min(to, 24); h++) grid[dayIdx][h] = true;
       continue;
     }
 
     const startDayIdx = dayKeys.indexOf(startKey);
     if (startDayIdx !== -1) {
       const from = Math.floor(startHour);
-      for (let h = from; h < 24; h++) week[startDayIdx][h] = true;
+      for (let h = from; h < 24; h++) grid[startDayIdx][h] = true;
     }
     const endDayIdx = dayKeys.indexOf(endKey);
     if (endDayIdx !== -1) {
       const to = Math.ceil(endHour);
-      for (let h = 0; h < Math.min(to, 24); h++) week[endDayIdx][h] = true;
+      for (let h = 0; h < Math.min(to, 24); h++) grid[endDayIdx][h] = true;
     }
     dayKeys.forEach((key, dayIdx) => {
-      if (key > startKey && key < endKey) week[dayIdx].fill(true);
+      if (key > startKey && key < endKey) grid[dayIdx].fill(true);
     });
   }
 
-  return week;
+  return grid;
+}
+
+export async function fetchWeekBlockedHours(monday: Date): Promise<boolean[][]> {
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+  return fetchBlockedHoursForDays(days);
+}
+
+export async function fetchRangeBlockedHours(days: Date[]): Promise<boolean[][]> {
+  return fetchBlockedHoursForDays(days, 2500);
 }

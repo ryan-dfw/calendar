@@ -4,24 +4,54 @@ import { formatHour, gridLineTier, HOUR_LABEL_STEP } from "../lib/hours";
 type GridSkeletonProps = {
   days: Date[];
   today: Date;
+  onSelectDay?: (d: Date) => void;
 };
 
-export function GridSkeleton({ days, today }: GridSkeletonProps) {
+export function GridSkeleton({ days, today, onSelectDay }: GridSkeletonProps) {
+  const rightCol = days.length + 2;
+  const clickable = days.length > 1 && !!onSelectDay;
+
   return (
     <>
       <div className="gridCell headerGutter" style={{ gridColumn: 1, gridRow: 1 }} />
-      <div className="gridCell headerGutter headerGutter--right" style={{ gridColumn: 9, gridRow: 1 }} />
+      <div
+        className="gridCell headerGutter headerGutter--right"
+        style={{ gridColumn: rightCol, gridRow: 1 }}
+      />
 
       {days.map((d, i) => (
         <div
           key={`h-${i}`}
-          className={["gridCell", "dayHeader", isSameDate(d, today) ? "isToday" : ""]
+          className={[
+            "gridCell",
+            "dayHeader",
+            isSameDate(d, today) ? "isToday" : "",
+            clickable ? "isClickable" : "",
+          ]
             .join(" ")
             .trim()}
           style={{ gridColumn: i + 2, gridRow: 1 }}
+          role={clickable ? "button" : undefined}
+          tabIndex={clickable ? 0 : undefined}
+          aria-label={clickable ? `Go to ${d.toDateString()} in day view` : undefined}
+          onClick={clickable ? () => onSelectDay!(d) : undefined}
+          onKeyDown={
+            clickable
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectDay!(d);
+                  }
+                }
+              : undefined
+          }
         >
-          <span className="dayName">{DAY_LABELS[i]}</span>
-          <span className="dayNum">{d.getDate()}</span>
+          {days.length > 1 ? (
+            <>
+              <span className="dayName">{DAY_LABELS[d.getDay() === 0 ? 6 : d.getDay() - 1]}</span>
+              <span className="dayNum">{d.getDate()}</span>
+            </>
+          ) : null}
         </div>
       ))}
 
@@ -48,7 +78,7 @@ export function GridSkeleton({ days, today }: GridSkeletonProps) {
           ]
             .join(" ")
             .trim()}
-          style={{ gridColumn: 9, gridRow: h + 2 }}
+          style={{ gridColumn: rightCol, gridRow: h + 2 }}
         >
           {formatHour(h)}
         </div>
