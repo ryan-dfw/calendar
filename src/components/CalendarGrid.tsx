@@ -10,6 +10,12 @@ type CalendarGridProps = {
 
 const HOUR_LABEL_STEP = 3;
 
+function gridLineTier(h: number): "" | "isMidLine" | "isMinor" {
+  if (h % 6 === 0) return "";
+  if (h % 3 === 0) return "isMidLine";
+  return "isMinor";
+}
+
 function formatHour(h: number): string {
   const hh = h % 24;
   const period = hh < 12 ? "a" : "p";
@@ -22,12 +28,29 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
   const { blocked } = useWeekBlockedHours(monday);
 
   const [tapped, setTapped] = useState<Set<string>>(new Set());
+  const [activeEchoes, setActiveEchoes] = useState<Set<string>>(new Set());
 
   const toggleTapped = (key: string) => {
     setTapped((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
+      return next;
+    });
+    setActiveEchoes((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+        setTimeout(() => {
+          setActiveEchoes((cur) => {
+            const after = new Set(cur);
+            after.delete(key);
+            return after;
+          });
+        }, 2000);
+      }
       return next;
     });
   };
@@ -99,12 +122,7 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
         return Array.from({ length: 24 }, (_, h) => (
           <div
             key={`c-${dayIdx}-${h}`}
-            className={[
-              "gridCell",
-              "hourCell",
-              today_ ? "isToday" : "",
-              h % HOUR_LABEL_STEP !== 0 ? "isMinor" : "",
-            ]
+            className={["gridCell", "hourCell", today_ ? "isToday" : "", gridLineTier(h)]
               .join(" ")
               .trim()}
             style={{ gridColumn: dayIdx + 2, gridRow: h + 2 }}
@@ -127,12 +145,12 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
                 const rightEdge = ((todayIdx + 1) / 7) * 100;
                 const outerAlpha = 0.35;
                 return `linear-gradient(to right,
-                  rgba(255, 20, 147, 0.05) 0%,
-                  rgba(255, 20, 147, ${outerAlpha}) ${leftEdge}%,
-                  rgba(255, 20, 147, 1) ${leftEdge}%,
-                  rgba(255, 20, 147, 1) ${rightEdge}%,
-                  rgba(255, 20, 147, ${outerAlpha}) ${rightEdge}%,
-                  rgba(255, 20, 147, 0.05) 100%)`;
+                  rgba(59, 130, 246, 0.05) 0%,
+                  rgba(59, 130, 246, ${outerAlpha}) ${leftEdge}%,
+                  rgba(59, 130, 246, 1) ${leftEdge}%,
+                  rgba(59, 130, 246, 1) ${rightEdge}%,
+                  rgba(59, 130, 246, ${outerAlpha}) ${rightEdge}%,
+                  rgba(59, 130, 246, 0.05) 100%)`;
               })(),
             }}
           />
@@ -296,7 +314,7 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
       })}
 
       {[6, 12, 18]
-        .filter((h) => !(blocked[3]?.[h] ?? false))
+        .filter((h) => !(blocked[3]?.[h] ?? false) && !activeEchoes.has(`3-${h}`))
         .map((h) => (
           <div
             key={`mark-${h}`}
