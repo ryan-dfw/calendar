@@ -299,3 +299,48 @@
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+@media (max-width: 600px) {
+  .stage {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(8, 12, 20, 0.55);
+  backdrop-filter: blur(24px) saturate(150%) brightness(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(150%) brightness(1.2);
+  padding: 4px calc(4px + env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom))
+    calc(4px + env(safe-area-inset-left));
+}
+
+.bottomBar .viewSwitcher,
+.bottomBar .todayGroup {
+  display: contents;
+}
+
+.bottomBar .searchDialog {
+  top: auto;
+  bottom: calc(100% + 10px);
+  transform-origin: bottom right;
+  animation-name: searchPopInUp;
+}
+
+@keyframes searchPopInUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -80,6 +80,16 @@ export default function App() {
     return yearOffsetFor(initialParams.date, today);
   });
   const [compactLabel, setCompactLabel] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia("(max-width: 600px)").matches,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 600px)");
+    const onChange = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [searchInvalid, setSearchInvalid] = useState(false);
@@ -282,10 +292,84 @@ export default function App() {
     else goPrev();
   };
 
+  const viewSwitcherEl = <ViewSwitcher view={view} onSelect={handleViewSelect} />;
+
+  const todayGroupEl = (
+    <div className="todayGroup">
+      <button
+        type="button"
+        className={["upBtn", view === "Y" ? "isDimmed" : ""].join(" ").trim()}
+        onClick={goUpLevel}
+        aria-label="Go up a level"
+      >
+        <UpLevelIcon />
+      </button>
+      <div className="searchAnchor" ref={searchAnchorRef}>
+        <button
+          type="button"
+          className="upBtn"
+          onClick={() => setSearchOpen((o) => !o)}
+          aria-label="Search"
+        >
+          <SearchIcon />
+        </button>
+        {searchOpen ? (
+          <div className="searchDialog">
+            <div
+              className={["searchInputPill", searchInvalid ? "isInvalid" : ""].join(" ").trim()}
+            >
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                autoFocus
+                disabled={searchInvalid}
+                placeholder="YYMMDD"
+                className="searchInput"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") closeSearch();
+                  else if (e.key === "Enter") submitSearch();
+                }}
+              />
+              <button
+                type="button"
+                className="searchIconBtn searchIconBtn--go"
+                onClick={submitSearch}
+                aria-label="Search"
+              >
+                <SearchIcon />
+              </button>
+            </div>
+            <button
+              type="button"
+              className="searchIconBtn"
+              onClick={closeSearch}
+              aria-label="Close search"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+        ) : null}
+      </div>
+      <button
+        type="button"
+        className="todayBtn"
+        onClick={goToday}
+        disabled={isAtToday}
+        aria-label="Go to this week"
+      >
+        <TodayIcon day={today.getDate()} />
+      </button>
+    </div>
+  );
+
   return (
     <div className="stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <div className="headerRow">
-        <ViewSwitcher view={view} onSelect={handleViewSelect} />
+        {isMobile ? null : viewSwitcherEl}
         <WeekNav
           label={label}
           onPrev={goPrev}
@@ -293,76 +377,15 @@ export default function App() {
           canGoPrev={canGoPrev}
           onLabelClick={() => setCompactLabel((c) => !c)}
         />
-        <div className="todayGroup">
-          <button
-            type="button"
-            className={["upBtn", view === "Y" ? "isDimmed" : ""].join(" ").trim()}
-            onClick={goUpLevel}
-            aria-label="Go up a level"
-          >
-            <UpLevelIcon />
-          </button>
-          <div className="searchAnchor" ref={searchAnchorRef}>
-            <button
-              type="button"
-              className="upBtn"
-              onClick={() => setSearchOpen((o) => !o)}
-              aria-label="Search"
-            >
-              <SearchIcon />
-            </button>
-            {searchOpen ? (
-              <div className="searchDialog">
-                <div
-                  className={["searchInputPill", searchInvalid ? "isInvalid" : ""].join(" ").trim()}
-                >
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={6}
-                    autoFocus
-                    disabled={searchInvalid}
-                    placeholder="YYMMDD"
-                    className="searchInput"
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") closeSearch();
-                      else if (e.key === "Enter") submitSearch();
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="searchIconBtn searchIconBtn--go"
-                    onClick={submitSearch}
-                    aria-label="Search"
-                  >
-                    <SearchIcon />
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  className="searchIconBtn"
-                  onClick={closeSearch}
-                  aria-label="Close search"
-                >
-                  <CloseIcon />
-                </button>
-              </div>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            className="todayBtn"
-            onClick={goToday}
-            disabled={isAtToday}
-            aria-label="Go to this week"
-          >
-            <TodayIcon day={today.getDate()} />
-          </button>
-        </div>
+        {isMobile ? null : todayGroupEl}
       </div>
+
+      {isMobile ? (
+        <div className="bottomBar">
+          {viewSwitcherEl}
+          {todayGroupEl}
+        </div>
+      ) : null}
 
       {view === "Y" ? (
         <YearView yearAnchor={yearAnchor} today={today} onSelectMonth={goToMonth} />
