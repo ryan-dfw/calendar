@@ -130,28 +130,33 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
         ));
       })}
 
-      {todayIdx !== -1 ? (
+      {todayIdx > 0 ? (
         <div
           className="nowLineCell"
-          style={{ gridColumn: "2 / 9", gridRow: nowHour + 2 }}
+          style={{ gridColumn: `2 / ${todayIdx + 2}`, gridRow: nowHour + 2 }}
           aria-hidden="true"
         >
           <div
             className="nowLine"
             style={{
               top: `${nowFraction * 100}%`,
-              background: (() => {
-                const leftEdge = (todayIdx / 7) * 100;
-                const rightEdge = ((todayIdx + 1) / 7) * 100;
-                const outerAlpha = 0.35;
-                return `linear-gradient(to right,
-                  rgba(59, 130, 246, 0.05) 0%,
-                  rgba(59, 130, 246, ${outerAlpha}) ${leftEdge}%,
-                  rgba(59, 130, 246, 1) ${leftEdge}%,
-                  rgba(59, 130, 246, 1) ${rightEdge}%,
-                  rgba(59, 130, 246, ${outerAlpha}) ${rightEdge}%,
-                  rgba(59, 130, 246, 0.05) 100%)`;
-              })(),
+              background: `linear-gradient(to right, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.35) 100%)`,
+            }}
+          />
+        </div>
+      ) : null}
+
+      {todayIdx !== -1 && todayIdx < 6 ? (
+        <div
+          className="nowLineCell"
+          style={{ gridColumn: `${todayIdx + 3} / 9`, gridRow: nowHour + 2 }}
+          aria-hidden="true"
+        >
+          <div
+            className="nowLine"
+            style={{
+              top: `${nowFraction * 100}%`,
+              background: `linear-gradient(to right, rgba(59, 130, 246, 0.35) 0%, rgba(59, 130, 246, 0.05) 100%)`,
             }}
           />
         </div>
@@ -159,10 +164,11 @@ export function CalendarGrid({ monday, today }: CalendarGridProps) {
 
       {todayIdx !== -1 ? (
         <div
-          className="nowLineCell"
+          className="nowLineCell nowLineCell--today"
           style={{ gridColumn: todayIdx + 2, gridRow: nowHour + 2 }}
           aria-hidden="true"
         >
+          <div className="nowGlow" style={{ top: `${nowFraction * 100}%` }} />
           <div className="nowDot" style={{ top: `${nowFraction * 100}%` }} />
         </div>
       ) : null}
