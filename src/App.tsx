@@ -6,7 +6,14 @@ import { WeekNav } from "./components/WeekNav";
 import { CalendarGrid } from "./components/CalendarGrid";
 import { TodayIcon } from "./components/TodayIcon";
 import { useBackgroundDrift } from "./hooks/useBackgroundDrift";
-import { startOfWeekMonday, addDays, formatWeekRange } from "./lib/week";
+import {
+  startOfWeekMonday,
+  addDays,
+  formatWeekRange,
+  formatWeekRangeCompact,
+  toCompactDate,
+  parseCompactDate,
+} from "./lib/week";
 
 export default function App() {
   useBackgroundDrift();
@@ -14,13 +21,32 @@ export default function App() {
   const today = useMemo(() => new Date(), []);
   const currentMonday = useMemo(() => startOfWeekMonday(today), [today]);
 
-  const [weekOffset, setWeekOffset] = useState(0);
+  const [weekOffset, setWeekOffset] = useState(() => {
+    const raw = window.location.search.replace(/^\?/, "");
+    const parsed = parseCompactDate(raw);
+    if (!parsed) return 0;
+    const targetMonday = startOfWeekMonday(parsed);
+    const diffDays = Math.round((targetMonday.getTime() - currentMonday.getTime()) / 86_400_000);
+    return Math.max(0, Math.round(diffDays / 7));
+  });
+  const [compactLabel, setCompactLabel] = useState(false);
 
   const monday = useMemo(
     () => addDays(currentMonday, weekOffset * 7),
     [currentMonday, weekOffset],
   );
-  const label = useMemo(() => formatWeekRange(monday), [monday]);
+  const label = useMemo(
+    () => (compactLabel ? formatWeekRangeCompact(monday) : formatWeekRange(monday)),
+    [monday, compactLabel],
+  );
+
+  useEffect(() => {
+    const url =
+      weekOffset === 0
+        ? window.location.pathname
+        : `${window.location.pathname}?${toCompactDate(monday)}`;
+    window.history.replaceState(null, "", url);
+  }, [monday, weekOffset]);
 
   const goPrev = () => setWeekOffset((w) => Math.max(0, w - 1));
   const goNext = () => setWeekOffset((w) => w + 1);
@@ -73,6 +99,7 @@ export default function App() {
           onPrev={goPrev}
           onNext={goNext}
           canGoPrev={weekOffset > 0}
+          onLabelClick={() => setCompactLabel((c) => !c)}
         />
         <button
           type="button"

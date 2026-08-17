@@ -1,0 +1,30 @@
+.shimmerOverlay {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: url(#freeHoursMask);
+  mask-image: url(#freeHoursMask);
+}
+
+.shimmerOverlay::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    115deg,
+    transparent 42%,
+    rgba(var(--accent) / 0.22) 50%,
+    transparent 58%
+  );
+  opacity: 0.25;
+  animation: shimmerSweep 6s linear infinite;
+  will-change: transform;
+}
+
+@keyframes shimmerSweep {
+  from { transform: translate(-55%, -55%); }
+  to { transform: translate(55%, 55%); }
+}

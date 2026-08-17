@@ -1,0 +1,104 @@
+.headerRow {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: clamp(8px, 2vw, 16px);
+  padding-bottom: clamp(8px, 1.5vh, 14px);
+}
+
+.weekNav {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 3vw, 20px);
+}
+
+.todayBtn {
+  grid-column: 3;
+  justify-self: center;
+  width: clamp(30px, 7vw, 40px);
+  height: clamp(30px, 7vw, 40px);
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+}
+
+.todayBtn svg {
+  width: clamp(16px, 4.5vw, 22px);
+  height: clamp(16px, 4.5vw, 22px);
+}
+
+.todayBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.todayBtn:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.todayBtn:focus-visible {
+  outline: 2px solid rgba(244, 247, 250, 0.55);
+  outline-offset: 2px;
+}
+
+.navBtn {
+  display: grid;
+  place-items: center;
+  width: clamp(30px, 7vw, 40px);
+  height: clamp(30px, 7vw, 40px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--text);
+  font-size: clamp(16px, 4vw, 20px);
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+}
+
+.navBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.navBtn:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.navBtn:focus-visible {
+  outline: 2px solid rgba(244, 247, 250, 0.55);
+  outline-offset: 2px;
+}
+
+.weekLabel {
+  min-width: 22ch;
+  font-size: clamp(12px, 3.2vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0.92;
+  cursor: pointer;
+}
+
+.weekLabel:focus-visible {
+  outline: 2px solid rgba(244, 247, 250, 0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
