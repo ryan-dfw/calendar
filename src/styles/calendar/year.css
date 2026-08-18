@@ -1,6 +1,8 @@
 .yearWrap {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
+  width: 100%;
+  aspect-ratio: 4 / 5;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -91,8 +93,9 @@
 .yearDayCell {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 10%;
 }
 
 .yearDayNum {
@@ -133,10 +136,10 @@
 .yearDayDot {
   position: absolute;
   bottom: 1px;
-  left: 55%;
+  left: 50%;
   transform: translateX(-50%);
   width: 78%;
-  height: 34%;
+  height: 50%;
   border-radius: 2.5px;
   overflow: hidden;
   background: linear-gradient(
