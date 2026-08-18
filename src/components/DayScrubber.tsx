@@ -158,6 +158,9 @@ export function DayScrubber({ today, selectedDay, onSelect, style }: DayScrubber
             d.getMonth() !== today.getMonth() || d.getFullYear() !== today.getFullYear();
           const dayBlocked = blocked[i] ?? new Array(24).fill(false);
           const isFree = dayBlocked.every((h) => !h);
+          const hasAnyBooking = dayBlocked.some(Boolean);
+          const isFullyBooked = dayBlocked.every(Boolean);
+          const isPartial = hasAnyBooking && !isFullyBooked;
           return (
             <div
               key={i}
@@ -189,7 +192,17 @@ export function DayScrubber({ today, selectedDay, onSelect, style }: DayScrubber
               <span className="dayScrubberName">
                 {DAY_LABELS[d.getDay() === 0 ? 6 : d.getDay() - 1]}
               </span>
-              <span className="dayScrubberNum">{d.getDate()}</span>
+              <span
+                className={[
+                  "dayScrubberNum",
+                  isPartial ? "isPartial" : "",
+                  isFullyBooked ? "isFull" : "",
+                ]
+                  .join(" ")
+                  .trim()}
+              >
+                {d.getDate()}
+              </span>
             </div>
           );
         })}

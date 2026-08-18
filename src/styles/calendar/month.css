@@ -58,7 +58,8 @@
   border-top-right-radius: 16px;
 }
 
-.monthDayCell.isOutside {
+.monthDayCell.isOutside,
+.monthDayCell.isPastDay {
   opacity: 0.35;
 }
 
@@ -78,6 +79,14 @@
 
 .monthDayCell.isToday .monthDayNum {
   color: rgb(var(--accent));
+}
+
+.monthDayNum.isPartial {
+  opacity: 0.75;
+}
+
+.monthDayNum.isFull {
+  opacity: 0.6;
 }
 
 .monthFillTrack {

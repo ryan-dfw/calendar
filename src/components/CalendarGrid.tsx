@@ -67,7 +67,7 @@ export function CalendarGrid({ days, today, onSelectDay }: CalendarGridProps) {
       className={["calendarWrap", days.length === 1 ? "isSingleDay" : ""].join(" ").trim()}
       style={{ "--day-count": days.length } as CSSProperties}
     >
-      <GridSkeleton days={days} today={today} onSelectDay={onSelectDay} />
+      <GridSkeleton days={days} today={today} onSelectDay={onSelectDay} blocked={blocked} />
 
       {days.length === 1 && onSelectDay ? (
         <DayScrubber

@@ -5,9 +5,10 @@ type GridSkeletonProps = {
   days: Date[];
   today: Date;
   onSelectDay?: (d: Date) => void;
+  blocked?: boolean[][];
 };
 
-export function GridSkeleton({ days, today, onSelectDay }: GridSkeletonProps) {
+export function GridSkeleton({ days, today, onSelectDay, blocked }: GridSkeletonProps) {
   const rightCol = days.length + 2;
   const clickable = days.length > 1 && !!onSelectDay;
 
@@ -19,41 +20,59 @@ export function GridSkeleton({ days, today, onSelectDay }: GridSkeletonProps) {
         style={{ gridColumn: rightCol, gridRow: 1 }}
       />
 
-      {days.map((d, i) => (
-        <div
-          key={`h-${i}`}
-          className={[
-            "gridCell",
-            "dayHeader",
-            isSameDate(d, today) ? "isToday" : "",
-            clickable ? "isClickable" : "",
-          ]
-            .join(" ")
-            .trim()}
-          style={{ gridColumn: i + 2, gridRow: 1 }}
-          role={clickable ? "button" : undefined}
-          tabIndex={clickable ? 0 : undefined}
-          aria-label={clickable ? `Go to ${d.toDateString()} in day view` : undefined}
-          onClick={clickable ? () => onSelectDay!(d) : undefined}
-          onKeyDown={
-            clickable
-              ? (e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    onSelectDay!(d);
+      {days.map((d, i) => {
+        const dayBlocked = blocked?.[i] ?? new Array(24).fill(false);
+        const hasAnyBooking = dayBlocked.some(Boolean);
+        const isFullyBooked = dayBlocked.every(Boolean);
+        const isPartial = hasAnyBooking && !isFullyBooked;
+        return (
+          <div
+            key={`h-${i}`}
+            className={[
+              "gridCell",
+              "dayHeader",
+              isSameDate(d, today) ? "isToday" : "",
+              clickable ? "isClickable" : "",
+            ]
+              .join(" ")
+              .trim()}
+            style={{ gridColumn: i + 2, gridRow: 1 }}
+            role={clickable ? "button" : undefined}
+            tabIndex={clickable ? 0 : undefined}
+            aria-label={clickable ? `Go to ${d.toDateString()} in day view` : undefined}
+            onClick={clickable ? () => onSelectDay!(d) : undefined}
+            onKeyDown={
+              clickable
+                ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectDay!(d);
+                    }
                   }
-                }
-              : undefined
-          }
-        >
-          {days.length > 1 ? (
-            <>
-              <span className="dayName">{DAY_LABELS[d.getDay() === 0 ? 6 : d.getDay() - 1]}</span>
-              <span className="dayNum">{d.getDate()}</span>
-            </>
-          ) : null}
-        </div>
-      ))}
+                : undefined
+            }
+          >
+            {days.length > 1 ? (
+              <>
+                <span className="dayName">
+                  {DAY_LABELS[d.getDay() === 0 ? 6 : d.getDay() - 1]}
+                </span>
+                <span
+                  className={[
+                    "dayNum",
+                    isPartial ? "isPartial" : "",
+                    isFullyBooked ? "isFull" : "",
+                  ]
+                    .join(" ")
+                    .trim()}
+                >
+                  {d.getDate()}
+                </span>
+              </>
+            ) : null}
+          </div>
+        );
+      })}
 
       {Array.from({ length: 24 }, (_, h) => (
         <div

@@ -40,6 +40,9 @@ export function MonthView({ monthAnchor, today, onSelectWeek }: MonthViewProps) 
         const runs = toBusyRuns(dayBlocked);
         const inMonth = d.getMonth() === anchorMonth;
         const isPast = isPastDate(d, today);
+        const hasAnyBooking = dayBlocked.some(Boolean);
+        const isFullyBooked = dayBlocked.every(Boolean);
+        const isPartial = hasAnyBooking && !isFullyBooked;
         const col = (i % 7) + 1;
         const rowIdx = Math.floor(i / 7);
         const row = rowIdx + 2;
@@ -61,6 +64,7 @@ export function MonthView({ monthAnchor, today, onSelectWeek }: MonthViewProps) 
             className={[
               "monthDayCell",
               inMonth ? "" : "isOutside",
+              inMonth && isPast ? "isPastDay" : "",
               isSameDate(d, today) ? "isToday" : "",
               isCurrentWeek ? "isCurrentWeek" : "",
               col === 1 ? "isWeekStart" : "",
@@ -79,12 +83,28 @@ export function MonthView({ monthAnchor, today, onSelectWeek }: MonthViewProps) 
             onClick={handleTap}
             onAnimationEnd={() => setShudder((cur) => (cur?.key === cellKey ? null : cur))}
           >
-            <span className="monthDayNum">{d.getDate()}</span>
+            <span
+              className={[
+                "monthDayNum",
+                isPartial ? "isPartial" : "",
+                isFullyBooked ? "isFull" : "",
+              ]
+                .join(" ")
+                .trim()}
+            >
+              {d.getDate()}
+            </span>
             <div className="monthFillTrack">
               {runs.map((run, runIdx) => (
                 <div
                   key={`fill-${i}-${runIdx}`}
-                  className={["blockRun", isPast ? "isPast" : ""].join(" ").trim()}
+                  className={[
+                    "blockRun",
+                    isPast ? "isPast" : "",
+                    isFullyBooked ? "isFull" : "",
+                  ]
+                    .join(" ")
+                    .trim()}
                   style={{
                     position: "absolute",
                     left: 0,
