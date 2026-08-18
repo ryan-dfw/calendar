@@ -15,7 +15,15 @@ export function MonthView({ monthAnchor, today, onSelectWeek }: MonthViewProps) 
     () => getMonthGridDays(monthAnchor),
     [monthAnchor.getFullYear(), monthAnchor.getMonth()],
   );
-  const { blocked } = useMonthBlockedHours(days);
+  const { blocked, loading } = useMonthBlockedHours(days);
+  const [contentVisible, setContentVisible] = useState(!loading);
+  useEffect(() => {
+    if (loading) {
+      setContentVisible(false);
+    } else {
+      setContentVisible(true);
+    }
+  }, [loading]);
   const weekCount = days.length / 7;
   const anchorMonth = monthAnchor.getMonth();
   const todayIdx = days.findIndex((d) => isSameDate(d, today));
@@ -35,7 +43,15 @@ export function MonthView({ monthAnchor, today, onSelectWeek }: MonthViewProps) 
   const nowFraction = (now.getHours() + now.getMinutes() / 60) / 24;
 
   return (
-    <div className="monthWrap" style={{ gridTemplateRows: `auto repeat(${weekCount}, 1fr)` }}>
+    <div
+      className="monthWrap"
+      style={
+        {
+          gridTemplateRows: `auto repeat(${weekCount}, 1fr)`,
+          "--content-visible": contentVisible ? 1 : 0,
+        } as CSSProperties
+      }
+    >
       {DAY_LABELS.map((label, i) => (
         <div key={`mh-${i}`} className="monthHeaderCell" style={{ gridColumn: i + 1, gridRow: 1 }}>
           {label}
@@ -121,6 +137,7 @@ export function MonthView({ monthAnchor, today, onSelectWeek }: MonthViewProps) 
                     right: 0,
                     top: `${(run.start / 24) * 100}%`,
                     height: `${(run.length / 24) * 100}%`,
+                    transitionDelay: `${(col - 1) * 40}ms`,
                   }}
                 />
               ))}

@@ -28,7 +28,14 @@ export function YearView({ yearAnchor, today, onSelectMonth }: YearViewProps) {
     return days;
   }, [year]);
 
-  const { blocked } = useMonthBlockedHours(yearDays);
+  const { blocked, loading, resolvedThrough } = useMonthBlockedHours(yearDays);
+  const dayIndexByKey = useMemo(() => {
+    const map = new Map<string, number>();
+    yearDays.forEach((d, i) => {
+      map.set(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`, i);
+    });
+    return map;
+  }, [yearDays]);
   const blockedByKey = useMemo(() => {
     const map = new Map<string, boolean[]>();
     yearDays.forEach((d, i) => {
@@ -109,6 +116,11 @@ export function YearView({ yearAnchor, today, onSelectMonth }: YearViewProps) {
                 const hasAnyBooking = q1 || q2 || q3 || q4;
                 const isEmpty = inMonth && !isPastDay && !hasAnyBooking;
                 const isFullyBooked = inMonth && !isPastDay && dayBlocked.every(Boolean);
+                const yearIdx = inMonth
+                  ? dayIndexByKey.get(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`)
+                  : undefined;
+                const isDataReady =
+                  isPastDay || !loading || (yearIdx !== undefined && yearIdx <= resolvedThrough);
 
                 return (
                   <div
@@ -136,14 +148,18 @@ export function YearView({ yearAnchor, today, onSelectMonth }: YearViewProps) {
                           .join(" ")
                           .trim()}
                         style={
-                          isPastDay || isEmpty || isFullyBooked
-                            ? undefined
-                            : ({
-                                "--q1": q1 ? 1 : 0,
-                                "--q2": q2 ? 1 : 0,
-                                "--q3": q3 ? 1 : 0,
-                                "--q4": q4 ? 1 : 0,
-                              } as CSSProperties)
+                          {
+                            ...(isPastDay || isEmpty || isFullyBooked
+                              ? {}
+                              : {
+                                  "--q1": q1 ? 1 : 0,
+                                  "--q2": q2 ? 1 : 0,
+                                  "--q3": q3 ? 1 : 0,
+                                  "--q4": q4 ? 1 : 0,
+                                }),
+                            opacity: isDataReady ? 1 : 0,
+                            transition: isDataReady ? "opacity 0.4s ease" : "opacity 0s",
+                          } as CSSProperties
                         }
                       >
                         {isSameDate(d, today) ? (

@@ -17,7 +17,15 @@ type CalendarGridProps = {
 };
 
 export function CalendarGrid({ days, today, onSelectDay }: CalendarGridProps) {
-  const { blocked } = useWeekBlockedHours(days);
+  const { blocked, loading } = useWeekBlockedHours(days);
+  const [contentVisible, setContentVisible] = useState(!loading);
+  useEffect(() => {
+    if (loading) {
+      setContentVisible(false);
+    } else {
+      setContentVisible(true);
+    }
+  }, [loading]);
 
   const [tapped, setTapped] = useState<Set<string>>(new Set());
   const [activeEchoes, setActiveEchoes] = useState<Set<string>>(new Set());
@@ -65,7 +73,12 @@ export function CalendarGrid({ days, today, onSelectDay }: CalendarGridProps) {
   return (
     <div
       className={["calendarWrap", days.length === 1 ? "isSingleDay" : ""].join(" ").trim()}
-      style={{ "--day-count": days.length } as CSSProperties}
+      style={
+        {
+          "--day-count": days.length,
+          "--content-visible": contentVisible ? 1 : 0,
+        } as CSSProperties
+      }
     >
       <GridSkeleton days={days} today={today} onSelectDay={onSelectDay} blocked={blocked} />
 

@@ -42,6 +42,7 @@ export function BusyBlocks({
                 gridColumn: `${block.dayIdx + 2} / span ${block.span}`,
                 gridRow: `${block.start + 2} / span ${block.length}`,
                 "--shudder-power": count || 1,
+                transitionDelay: `${block.dayIdx * 25}ms`,
               } as CSSProperties
             }
             onClick={() => triggerShudder(key)}

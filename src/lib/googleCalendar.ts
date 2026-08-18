@@ -38,7 +38,13 @@ function dateKeyOf(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-export async function fetchBlockedHoursForDays(days: Date[], maxResults?: number): Promise<boolean[][]> {
+export type BlockedHoursBatch = (grid: boolean[][], resolvedThroughIdx: number) => void;
+
+export async function fetchBlockedHoursForDays(
+  days: Date[],
+  maxResults?: number,
+  onBatch?: BlockedHoursBatch,
+): Promise<boolean[][]> {
   const grid = emptyGrid(days.length);
 
   if (!API_KEY || !CALENDAR_ID) {
@@ -64,25 +70,11 @@ export async function fetchBlockedHoursForDays(days: Date[], maxResults?: number
   url.searchParams.set("timeZone", TIME_ZONE);
   if (maxResults) url.searchParams.set("maxResults", String(maxResults));
 
-  const events: GCalEvent[] = [];
-  let pageToken: string | undefined;
-  do {
-    if (pageToken) url.searchParams.set("pageToken", pageToken);
-    else url.searchParams.delete("pageToken");
-
-    const res = await fetch(url.toString());
-    if (!res.ok) {
-      throw new Error(`Google Calendar fetch failed (${res.status})`);
-    }
-    const data = (await res.json()) as { items?: GCalEvent[]; nextPageToken?: string };
-    events.push(...(data.items ?? []));
-    pageToken = data.nextPageToken;
-  } while (pageToken);
-
   const dayKeys = days.map(dateKeyOf);
+  let resolvedThroughIdx = -1;
 
-  for (const ev of events) {
-    if (ev.status === "cancelled") continue;
+  const applyEvent = (ev: GCalEvent): string | undefined => {
+    if (ev.status === "cancelled") return undefined;
 
     if (ev.start?.date && !ev.start?.dateTime) {
       const startKey = ev.start.date;
@@ -90,12 +82,12 @@ export async function fetchBlockedHoursForDays(days: Date[], maxResults?: number
       dayKeys.forEach((key, dayIdx) => {
         if (key >= startKey && key < endKeyExclusive) grid[dayIdx].fill(true);
       });
-      continue;
+      return startKey;
     }
 
     const startIso = ev.start?.dateTime;
     const endIso = ev.end?.dateTime;
-    if (!startIso || !endIso) continue;
+    if (!startIso || !endIso) return undefined;
 
     const startKey = dateKeyInTZ(startIso);
     const endKey = dateKeyInTZ(endIso);
@@ -104,11 +96,11 @@ export async function fetchBlockedHoursForDays(days: Date[], maxResults?: number
 
     if (startKey === endKey) {
       const dayIdx = dayKeys.indexOf(startKey);
-      if (dayIdx === -1) continue;
+      if (dayIdx === -1) return startKey;
       const from = Math.floor(startHour);
       const to = Math.max(from + 1, Math.ceil(endHour));
       for (let h = from; h < Math.min(to, 24); h++) grid[dayIdx][h] = true;
-      continue;
+      return startKey;
     }
 
     const startDayIdx = dayKeys.indexOf(startKey);
@@ -124,7 +116,49 @@ export async function fetchBlockedHoursForDays(days: Date[], maxResults?: number
     dayKeys.forEach((key, dayIdx) => {
       if (key > startKey && key < endKey) grid[dayIdx].fill(true);
     });
-  }
+    return startKey;
+  };
+
+  let pageToken: string | undefined;
+  do {
+    if (pageToken) url.searchParams.set("pageToken", pageToken);
+    else url.searchParams.delete("pageToken");
+
+    const res = await fetch(url.toString());
+    if (!res.ok) {
+      throw new Error(`Google Calendar fetch failed (${res.status})`);
+    }
+    const data = (await res.json()) as { items?: GCalEvent[]; nextPageToken?: string };
+    const items = data.items ?? [];
+
+    let lastKey: string | undefined;
+    for (const ev of items) {
+      const k = applyEvent(ev);
+      if (k) lastKey = k;
+    }
+
+    pageToken = data.nextPageToken;
+
+    if (lastKey) {
+      let idx = dayKeys.indexOf(lastKey);
+      if (idx === -1) {
+        for (let i = dayKeys.length - 1; i >= 0; i--) {
+          if (dayKeys[i] <= lastKey) {
+            idx = i;
+            break;
+          }
+        }
+      }
+      if (idx !== -1 && idx > resolvedThroughIdx) resolvedThroughIdx = idx;
+    }
+
+    if (onBatch) {
+      onBatch(
+        grid.map((d) => [...d]),
+        pageToken ? resolvedThroughIdx : days.length - 1,
+      );
+    }
+  } while (pageToken);
 
   return grid;
 }
@@ -138,6 +172,9 @@ export async function fetchWeekBlockedHours(monday: Date): Promise<boolean[][]> 
   return fetchBlockedHoursForDays(days);
 }
 
-export async function fetchRangeBlockedHours(days: Date[]): Promise<boolean[][]> {
-  return fetchBlockedHoursForDays(days, 2500);
+export async function fetchRangeBlockedHours(
+  days: Date[],
+  onBatch?: BlockedHoursBatch,
+): Promise<boolean[][]> {
+  return fetchBlockedHoursForDays(days, 2500, onBatch);
 }

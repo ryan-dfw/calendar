@@ -6,15 +6,25 @@ export function useMonthBlockedHours(days: Date[]) {
     days.map(() => new Array(24).fill(false)),
   );
   const [loading, setLoading] = useState(true);
+  const [resolvedThrough, setResolvedThrough] = useState(-1);
   const requestId = useRef(0);
   const rangeKey = days.length ? `${days[0].getTime()}-${days[days.length - 1].getTime()}` : "";
 
   useEffect(() => {
     const id = ++requestId.current;
     setLoading(true);
-    fetchRangeBlockedHours(days)
+    setResolvedThrough(-1);
+    fetchRangeBlockedHours(days, (grid, resolvedThroughIdx) => {
+      if (requestId.current === id) {
+        setBlocked(grid);
+        setResolvedThrough(resolvedThroughIdx);
+      }
+    })
       .then((grid) => {
-        if (requestId.current === id) setBlocked(grid);
+        if (requestId.current === id) {
+          setBlocked(grid);
+          setResolvedThrough(days.length - 1);
+        }
       })
       .catch((err) => {
         console.error("raincal: failed to load this month's calendar", err);
@@ -24,5 +34,5 @@ export function useMonthBlockedHours(days: Date[]) {
       });
   }, [rangeKey]);
 
-  return { blocked, loading };
+  return { blocked, loading, resolvedThrough };
 }

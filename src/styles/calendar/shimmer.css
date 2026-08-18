@@ -4,6 +4,8 @@
   pointer-events: none;
   -webkit-mask-image: url(#freeHoursMask);
   mask-image: url(#freeHoursMask);
+  opacity: var(--content-visible, 1);
+  transition: opacity 0.4s ease;
 }
 
 .shimmerOverlay::before {

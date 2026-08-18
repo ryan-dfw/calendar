@@ -7,16 +7,8 @@
   letter-spacing: 0.02em;
   color: var(--text-dim);
   pointer-events: none;
-  animation: midWeekMarkFadeIn 0.5s ease forwards;
-}
-
-@keyframes midWeekMarkFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 0.65;
-  }
+  opacity: calc(var(--content-visible, 1) * 0.65);
+  transition: opacity 0.4s ease;
 }
 
 .nowLineCell {

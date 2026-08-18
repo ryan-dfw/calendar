@@ -25,6 +25,7 @@ export function FreeBlocks({ days, today, blocked, onSelectHour }: FreeBlocksPro
             style={{
               gridColumn: dayIdx + 2,
               gridRow: `${run.start + 2} / span ${run.length}`,
+              transitionDelay: `${dayIdx * 25}ms`,
             }}
             role={isPast ? undefined : "button"}
             tabIndex={isPast ? undefined : 0}

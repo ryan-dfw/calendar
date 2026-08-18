@@ -111,6 +111,11 @@
   margin-top: 4px;
 }
 
+.monthFillTrack .blockRun.isPast {
+  opacity: 1;
+  transition-delay: 0s;
+}
+
 .monthNowLine {
   position: absolute;
   left: 0;
