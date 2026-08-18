@@ -64,7 +64,20 @@
 }
 
 .monthDayCell.isToday {
-  background: rgba(var(--accent) / 0.1);
+  background-image: linear-gradient(
+    180deg,
+    rgb(var(--accent) / 0.1) 0%,
+    rgb(var(--accent) / 0.095) 10%,
+    rgb(var(--accent) / 0.089) 20%,
+    rgb(var(--accent) / 0.084) 30%,
+    rgb(var(--accent) / 0.077) 40%,
+    rgb(var(--accent) / 0.071) 50%,
+    rgb(var(--accent) / 0.063) 60%,
+    rgb(var(--accent) / 0.055) 70%,
+    rgb(var(--accent) / 0.045) 80%,
+    rgb(var(--accent) / 0.032) 90%,
+    rgb(var(--accent) / 0) 100%
+  );
 }
 
 .monthDayCell.isCurrentWeek {
@@ -96,4 +109,13 @@
   width: 100%;
   align-self: stretch;
   margin-top: 4px;
+}
+
+.monthNowLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgb(var(--accent));
+  z-index: 1;
 }

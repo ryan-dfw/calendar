@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { DAY_LABELS, isPastDate, isSameDate, startOfWeekMonday } from "../lib/week";
 import { getMonthGridDays } from "../lib/month";
 import { toBusyRuns } from "../lib/busyRuns";
@@ -26,6 +26,13 @@ export function MonthView({ monthAnchor, today, onSelectWeek }: MonthViewProps) 
   const triggerShudder = (key: string) => {
     setShudder((prev) => ({ key, count: prev && prev.key === key ? prev.count + 1 : 1 }));
   };
+
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  const nowFraction = (now.getHours() + now.getMinutes() / 60) / 24;
 
   return (
     <div className="monthWrap" style={{ gridTemplateRows: `auto repeat(${weekCount}, 1fr)` }}>
@@ -95,6 +102,9 @@ export function MonthView({ monthAnchor, today, onSelectWeek }: MonthViewProps) 
               {d.getDate()}
             </span>
             <div className="monthFillTrack">
+              {isSameDate(d, today) ? (
+                <div className="monthNowLine" style={{ top: `${nowFraction * 100}%` }} />
+              ) : null}
               {runs.map((run, runIdx) => (
                 <div
                   key={`fill-${i}-${runIdx}`}
