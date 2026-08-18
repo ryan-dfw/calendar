@@ -117,7 +117,7 @@ export function MonthView({ monthAnchor, today, onSelectWeek }: MonthViewProps) 
                     .trim()}
                   style={{
                     position: "absolute",
-                    left: 0,
+                    left: "2%",
                     right: 0,
                     top: `${(run.start / 24) * 100}%`,
                     height: `${(run.length / 24) * 100}%`,

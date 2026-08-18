@@ -312,8 +312,10 @@
   right: 0;
   bottom: 0;
   z-index: 60;
-  display: flex;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: center;
+  justify-items: center;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   background-color: rgba(8, 12, 20, 0.55);
   backdrop-filter: blur(24px) saturate(150%) brightness(1.2);
